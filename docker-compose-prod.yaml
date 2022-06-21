@@ -1,0 +1,66 @@
+# Iniciar con
+#  docker-compose -f docker-compose-prod.yaml --env-file backend/.env up --build
+version: "3.5"
+
+services:
+  database:
+    image: mysql:8.0.25
+    volumes:
+      - dbdata:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+    ports:
+      - "33061:3306"
+    networks:
+      - app-network
+
+  web_server:
+    build:
+      context: .
+      dockerfile: docker/web_server.dockerfile
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    ports:
+      - "8000:80"
+    networks:
+      - app-network
+
+  # Laravel
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.dockerfile
+    working_dir: /var/www
+    volumes:
+      - ./backend:/var/www
+    depends_on:
+      - "database"
+    networks:
+      - app-network
+
+  # Nuxt.js
+  frontend:
+    image: node:16-alpine
+    command: sh -c "npm run build && npm run start"
+    volumes:
+      - ./frontend:/usr/src/app/frontend
+    working_dir: /usr/src/app/frontend
+    ports:
+      - "0.0.0.0:80:3000"
+    environment:
+      HOST: 0.0.0.0
+    networks:
+      - app-network
+
+#Docker Networks
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  dbdata:
+    driver: local
