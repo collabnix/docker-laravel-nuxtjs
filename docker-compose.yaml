@@ -8,10 +8,10 @@ services:
     volumes:
       - dbdata:/var/lib/mysql
     environment:
-      MYSQL_DATABASE: ${DB_DATABASE}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_DATABASE: "${DB_DATABASE:-db}"
+      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD:-password}"
+      MYSQL_PASSWORD: "${DB_PASSWORD:-password}"
+      MYSQL_USER: "${DB_USERNAME:-user}"
     ports:
       - "33061:3306"
     networks:
@@ -29,6 +29,20 @@ services:
     networks:
       - app-network
 
+  # PhpMyAdmin - Gestor visual de base de datos
+  pma:
+    image: phpmyadmin:5.2
+    environment:
+      PMA_ARBITRARY: 1
+      PMA_HOST: "${DB_HOST:-localhost}"
+      PMA_PORT: "${DB_USERNAME:-user}"
+    depends_on:
+      - database
+    ports:
+      - "8888:80"
+    networks:
+      - app-network
+
   # Laravel
   backend:
     build:
@@ -37,6 +51,7 @@ services:
     working_dir: /var/www
     volumes:
       - ./backend:/var/www
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini # Configuración de php.ini
     depends_on:
       - "database"
     networks:
