@@ -24,6 +24,8 @@ services:
     working_dir: /var/www
     volumes:
       - ./:/var/www
+    depends_on:
+      - backend
     ports:
       - "8000:80"
     networks:
@@ -53,7 +55,7 @@ services:
       - ./backend:/var/www
       - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini # Configuración de php.ini
     depends_on:
-      - "database"
+      - database
     networks:
       - app-network
 

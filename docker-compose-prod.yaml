@@ -1,80 +1,11 @@
 # Iniciar con
-#  docker-compose -f docker-compose-prod.yaml --env-file backend/.env up --build
+#  docker-compose -f docker-compose.yaml -f docker-compose-prod.yaml --env-file backend/.env up --build
 version: "3.5"
 
 services:
   database:
-    image: mysql:8.0.25
-    volumes:
-      - dbdata:/var/lib/mysql
-    environment:
-      MYSQL_DATABASE: "${DB_DATABASE:-db}"
-      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD:-password}"
-      MYSQL_PASSWORD: "${DB_PASSWORD:-password}"
-      MYSQL_USER: "${DB_USERNAME:-user}"
-    ports:
-      - "33061:3306"
-    networks:
-      - app-network
-
-  web_server:
-    build:
-      context: .
-      dockerfile: docker/web_server.dockerfile
-    working_dir: /var/www
-    volumes:
-      - ./:/var/www
-    ports:
-      - "8000:80"
-    networks:
-      - app-network
-
-  # PhpMyAdmin - Gestor visual de base de datos
-  pma:
-    image: phpmyadmin:5.2
-    environment:
-      PMA_ARBITRARY: 1
-      PMA_HOST: "${DB_HOST:-localhost}"
-      PMA_PORT: "${DB_USERNAME:-user}"
-    depends_on:
-      - database
-    ports:
-      - "8888:80"
-    networks:
-      - app-network
-
-  # Laravel
-  backend:
-    build:
-      context: .
-      dockerfile: docker/backend.dockerfile
-    working_dir: /var/www
-    volumes:
-      - ./backend:/var/www
-    depends_on:
-      - "database"
-    networks:
-      - app-network
+    restart: "always"
 
   # Nuxt.js
   frontend:
-    image: node:16-alpine
     command: sh -c "npm run build && npm run start"
-    volumes:
-      - ./frontend:/usr/src/app/frontend
-    working_dir: /usr/src/app/frontend
-    ports:
-      - "0.0.0.0:80:3000"
-    environment:
-      HOST: 0.0.0.0
-    networks:
-      - app-network
-
-#Docker Networks
-networks:
-  app-network:
-    driver: bridge
-
-volumes:
-  dbdata:
-    driver: local
