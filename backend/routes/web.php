@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', static fn() => view('welcome'));
+
+// Esta ruta no estará disponible en producción
+Route::get('phpinfo', static fn() => phpinfo())->middleware('not-in-prod');
