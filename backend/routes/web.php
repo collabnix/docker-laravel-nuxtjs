@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -17,3 +18,14 @@ Route::get('/', static fn() => view('welcome'));
 
 // Esta ruta no estará disponible en producción
 Route::get('phpinfo', static fn() => phpinfo())->middleware('not-in-prod');
+
+Route::prefix('file-upload')->group(static function () {
+    Route::get('', static fn() => view('file_upload'));
+    Route::post('', static function(Request $request){
+        if (!$request->file('fileUpload')?->store("")){
+            abort(500, "Ocurrió un error subiendo el archivo");
+        }
+
+        echo "Archivo subido correctamente";
+    });
+});
